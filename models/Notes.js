@@ -1,22 +1,18 @@
+// models/Note.js
 const mongoose = require('mongoose');
 
-const NotesSchema = new mongoose.Schema({
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'user',
+const NoteSchema = new mongoose.Schema({
+  title: String,
+  description: String,
+  pdf: {
+    data: Buffer,
+    contentType: String,
+    name: String
   },
-  filename: {
-    type: String,
-    required: true,
-  },
-  url: {
-    type: String,
-    required: true,
-  },
-  uploadedAt: {
+  date: {
     type: Date,
-    default: Date.now,
+    default: Date.now
   }
 });
 
-module.exports = mongoose.model('Notes', NotesSchema);
+module.exports = mongoose.model('Note', NoteSchema);

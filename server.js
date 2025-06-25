@@ -28,10 +28,9 @@ app.get('/', (req, res) => {
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/notices', require('./routes/notices'));
 app.use('/api/chat', require('./routes/chat'));
-app.use('/api/notes', require('./routes/notes'));
+app.use('/api/notes', require('./routes/notes')); // includes /uploadnotes and /getnotes
 
-// Static File Serving (PDFs, etc.)
-app.use('/uploads/notes', express.static(path.join(__dirname, 'uploads/notes')));
+// Static File Serving (for notices only)
 app.use('/uploads/notices', express.static(path.join(__dirname, 'uploads/notices')));
 
 // Start Server
