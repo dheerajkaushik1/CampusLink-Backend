@@ -31,5 +31,8 @@ coverage/
 .vscode/
 .idea/
 
-# Uploaded files (optional — only if uploads shouldn't be versioned)
-uploads/
+# Uploaded files
+/uploads/*
+!/uploads/notes/
+/uploads/notes/*
+!/uploads/notes/.gitkeep
