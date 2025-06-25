@@ -63,4 +63,39 @@ router.get('/getnotes', async (req, res) => {
   }
 });
 
+//delete a note
+router.delete('/deletenote/:id', async (req, res) => {
+  try {
+    const note = await Note.findByIdAndDelete(req.params.id);
+    if (!note) return res.status(404).json({ message: 'Note not found' });
+
+    res.json({ message: '🗑️ Note deleted successfully' });
+  } catch (err) {
+    console.error('❌ Delete note error:', err);
+    res.status(500).json({ message: 'Server error while deleting note' });
+  }
+});
+
+
+//edit a note
+router.put('/editnote/:id', async (req, res) => {
+  try {
+    const { title, description } = req.body;
+
+    const updatedNote = await Note.findByIdAndUpdate(
+      req.params.id,
+      { title, description },
+      { new: true }
+    );
+
+    if (!updatedNote) return res.status(404).json({ message: 'Note not found' });
+
+    res.json({ message: '✏️ Note updated successfully', updatedNote });
+  } catch (err) {
+    console.error('❌ Edit note error:', err);
+    res.status(500).json({ message: 'Server error while editing note' });
+  }
+});
+
+
 module.exports = router;
