@@ -31,7 +31,7 @@ app.use('/api/chat', require('./routes/chat'));
 app.use('/api/notes', require('./routes/notes'));
 
 // Static File Serving (PDFs, etc.)
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads/notes', express.static(path.join(__dirname, 'uploads/notes')));
 app.use('/uploads/notices', express.static(path.join(__dirname, 'uploads/notices')));
 
 // Start Server
