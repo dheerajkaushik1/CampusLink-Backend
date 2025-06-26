@@ -1,4 +1,3 @@
-// routes/doubts.js
 const express = require('express');
 const router = express.Router();
 const fetchUser = require('../middleware/fetchUser');
@@ -20,7 +19,7 @@ router.post('/', fetchUser, async (req, res) => {
     res.json(saved);
   } catch (err) {
     console.error(err);
-    res.status(500).send('Server Error');
+    res.status(500).json({ error: 'Server Error' });
   }
 });
 
@@ -31,7 +30,7 @@ router.get('/', fetchUser, async (req, res) => {
     res.json(doubts);
   } catch (err) {
     console.error(err);
-    res.status(500).send('Server Error');
+    res.status(500).json({ error: 'Server Error' });
   }
 });
 
@@ -39,11 +38,11 @@ router.get('/', fetchUser, async (req, res) => {
 router.get('/:id', fetchUser, async (req, res) => {
   try {
     const doubt = await Doubt.findById(req.params.id);
-    if (!doubt) return res.status(404).send('Doubt not found');
+    if (!doubt) return res.status(404).json({ error: 'Doubt not found' });
     res.json(doubt);
   } catch (err) {
     console.error(err);
-    res.status(500).send('Server Error');
+    res.status(500).json({ error: 'Server Error' });
   }
 });
 
@@ -52,7 +51,7 @@ router.post('/:id/answer', fetchUser, async (req, res) => {
   try {
     const { text } = req.body;
     const doubt = await Doubt.findById(req.params.id);
-    if (!doubt) return res.status(404).send('Doubt not found');
+    if (!doubt) return res.status(404).json({ error: 'Doubt not found' });
 
     const answer = {
       user: req.user.id,
@@ -66,7 +65,7 @@ router.post('/:id/answer', fetchUser, async (req, res) => {
     res.json(doubt);
   } catch (err) {
     console.error(err);
-    res.status(500).send('Server Error');
+    res.status(500).json({ error: 'Server Error' });
   }
 });
 
@@ -74,24 +73,23 @@ router.post('/:id/answer', fetchUser, async (req, res) => {
 router.delete('/:doubtId/answer/:answerId', fetchUser, async (req, res) => {
   try {
     const doubt = await Doubt.findById(req.params.doubtId);
-    if (!doubt) return res.status(404).send('Doubt not found');
+    if (!doubt) return res.status(404).json({ error: 'Doubt not found' });
 
     const answer = doubt.answers.id(req.params.answerId);
-    if (!answer) return res.status(404).send('Answer not found');
+    if (!answer) return res.status(404).json({ error: 'Answer not found' });
 
-    // ✅ ADD fallback if old answer has no user
-    if (!answer.user || answer.user.toString() !== req.user.id) {
-      return res.status(401).send('Unauthorized');
+    if (!answer.user || String(answer.user) !== req.user.id) {
+      return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    answer.remove(); 
+    doubt.answers.pull(answer._id);
     await doubt.save();
+
     const updatedDoubt = await Doubt.findById(req.params.doubtId);
     res.json({ msg: 'Answer deleted', doubt: updatedDoubt });
-
   } catch (err) {
-    console.error(err);
-    res.status(500).send('Server Error');
+    console.error('❌ Delete answer error:', err.message);
+    res.status(500).json({ error: 'Server Error' });
   }
 });
 
@@ -100,9 +98,9 @@ router.put('/:id', fetchUser, async (req, res) => {
   try {
     const { title, description } = req.body;
     const doubt = await Doubt.findById(req.params.id);
-    if (!doubt) return res.status(404).send('Doubt not found');
+    if (!doubt) return res.status(404).json({ error: 'Doubt not found' });
     if (doubt.user.toString() !== req.user.id) {
-      return res.status(401).send('Unauthorized');
+      return res.status(401).json({ error: 'Unauthorized' });
     }
 
     doubt.title = title || doubt.title;
@@ -111,7 +109,7 @@ router.put('/:id', fetchUser, async (req, res) => {
     res.json(doubt);
   } catch (err) {
     console.error(err);
-    res.status(500).send('Server Error');
+    res.status(500).json({ error: 'Server Error' });
   }
 });
 
@@ -119,16 +117,16 @@ router.put('/:id', fetchUser, async (req, res) => {
 router.delete('/:id', fetchUser, async (req, res) => {
   try {
     const doubt = await Doubt.findById(req.params.id);
-    if (!doubt) return res.status(404).send('Doubt not found');
+    if (!doubt) return res.status(404).json({ error: 'Doubt not found' });
     if (doubt.user.toString() !== req.user.id) {
-      return res.status(401).send('Unauthorized');
+      return res.status(401).json({ error: 'Unauthorized' });
     }
 
     await Doubt.findByIdAndDelete(req.params.id);
-    res.send('Doubt deleted');
+    res.json({ msg: 'Doubt deleted' });
   } catch (err) {
     console.error(err);
-    res.status(500).send('Server Error');
+    res.status(500).json({ error: 'Server Error' });
   }
 });
 
@@ -136,10 +134,10 @@ router.delete('/:id', fetchUser, async (req, res) => {
 router.patch('/:id/resolve', fetchUser, async (req, res) => {
   try {
     const doubt = await Doubt.findById(req.params.id);
-    if (!doubt) return res.status(404).send('Doubt not found');
+    if (!doubt) return res.status(404).json({ error: 'Doubt not found' });
 
     if (doubt.user.toString() !== req.user.id) {
-      return res.status(401).send('Unauthorized');
+      return res.status(401).json({ error: 'Unauthorized' });
     }
 
     doubt.resolved = true;
@@ -147,7 +145,7 @@ router.patch('/:id/resolve', fetchUser, async (req, res) => {
     res.json({ msg: 'Marked as resolved' });
   } catch (err) {
     console.error(err);
-    res.status(500).send('Server Error');
+    res.status(500).json({ error: 'Server Error' });
   }
 });
 
