@@ -9,7 +9,11 @@ const answerSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
-  createdAt: {
+  name: { 
+    type: String,
+    required: true,
+  },
+  timestamp: { 
     type: Date,
     default: Date.now,
   },
@@ -28,11 +32,19 @@ const doubtSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
+  name: { 
+    type: String,
+    required: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
   },
-  answers: [answerSchema], // 👈 embedded answers
+  resolved: {
+    type: Boolean,
+    default: false,
+  },
+  answers: [answerSchema],
 });
 
 module.exports = mongoose.model('Doubt', doubtSchema);
