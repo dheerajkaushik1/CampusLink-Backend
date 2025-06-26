@@ -15,18 +15,22 @@ router.get('/', async (req, res) => {
   }
 });
 
-// ✅ Upload Notices (Any authenticated user)
+// ✅ Upload Notices (Authenticated users only, with file check)
 router.post('/upload', fetchUser, upload.single('file'), async (req, res) => {
   try {
     const { title, description } = req.body;
-    const fileUrl = `/uploads/notices/${req.file.filename}`;
 
+    if (!req.file) {
+      return res.status(400).json({ msg: 'No file uploaded' });
+    }
+
+    const fileUrl = `/uploads/notices/${req.file.filename}`;
     const notice = new Notice({ title, description, fileUrl });
     await notice.save();
 
     res.json({ msg: 'Notice uploaded successfully', notice });
   } catch (err) {
-    console.error(err);
+    console.error('❌ Upload error:', err.message);
     res.status(500).send('Server error');
   }
 });
