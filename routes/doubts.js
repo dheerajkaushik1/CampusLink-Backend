@@ -1,3 +1,4 @@
+// routes/doubts.js
 const express = require('express');
 const router = express.Router();
 const fetchUser = require('../middleware/fetchUser');
@@ -57,6 +58,7 @@ router.post('/:id/answer', fetchUser, async (req, res) => {
       user: req.user.id,
       name: req.user.name,
       text,
+      createdAt: new Date()
     };
 
     doubt.answers.push(answer);
@@ -77,11 +79,12 @@ router.delete('/:doubtId/answer/:answerId', fetchUser, async (req, res) => {
     const answer = doubt.answers.id(req.params.answerId);
     if (!answer) return res.status(404).send('Answer not found');
 
-    if (answer.user.toString() !== req.user.id) {
+    // ✅ ADD fallback if old answer has no user
+    if (!answer.user || answer.user.toString() !== req.user.id) {
       return res.status(401).send('Unauthorized');
     }
 
-    answer.remove();
+    answer.remove(); // or doubt.answers.pull(answer._id);
     await doubt.save();
     res.json({ msg: 'Answer deleted', doubt });
   } catch (err) {

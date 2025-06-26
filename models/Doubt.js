@@ -9,11 +9,11 @@ const answerSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
-  name: { 
+  name: {
     type: String,
-    required: true,
+    required: true,        
   },
-  timestamp: { 
+  createdAt: {
     type: Date,
     default: Date.now,
   },
@@ -32,10 +32,11 @@ const doubtSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
-  name: { 
+  name: {
     type: String,
     required: true,
   },
+  year: String,
   createdAt: {
     type: Date,
     default: Date.now,
@@ -44,7 +45,7 @@ const doubtSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  answers: [answerSchema],
+  answers: [answerSchema], 
 });
 
 module.exports = mongoose.model('Doubt', doubtSchema);
