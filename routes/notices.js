@@ -3,18 +3,19 @@ const router = express.Router();
 const Notice = require('../models/Notices');
 const upload = require('../middleware/upload');
 const fetchUser = require('../middleware/fetchUser');
+const isAdmin = require('../middleware/isAdmin');
 
-//get all notices
+// ✅ Get all notices (Public)
 router.get('/', async (req, res) => {
-    try {
-        const notices = await Notice.find().sort({ date: -1 });
-        res.json(notices);
-    } catch (err) {
-        res.status(500).json({ msg: 'Server error' });
-    }
-})
+  try {
+    const notices = await Notice.find().sort({ date: -1 });
+    res.json(notices);
+  } catch (err) {
+    res.status(500).json({ msg: 'Server error' });
+  }
+});
 
-//Upload Notices
+// ✅ Upload Notices (Any authenticated user)
 router.post('/upload', fetchUser, upload.single('file'), async (req, res) => {
   try {
     const { title, description } = req.body;
@@ -30,8 +31,8 @@ router.post('/upload', fetchUser, upload.single('file'), async (req, res) => {
   }
 });
 
-// DELETE /api/notices/:id
-router.delete('/:id', fetchUser, async (req, res) => {
+// ✅ Delete Notice (Admin only)
+router.delete('/:id', fetchUser, isAdmin, async (req, res) => {
   try {
     const notice = await Notice.findById(req.params.id);
     if (!notice) return res.status(404).json({ msg: 'Notice not found' });
@@ -44,14 +45,12 @@ router.delete('/:id', fetchUser, async (req, res) => {
   }
 });
 
-// Update Notice
-router.put('/:id', fetchUser, async (req, res) => {
+// ✅ Update Notice (Admin only)
+router.put('/:id', fetchUser, isAdmin, async (req, res) => {
   try {
     const { title, description } = req.body;
     const notice = await Notice.findById(req.params.id);
-    if (!notice) {
-      return res.status(404).json({ msg: 'Notice not found' });
-    }
+    if (!notice) return res.status(404).json({ msg: 'Notice not found' });
 
     notice.title = title;
     notice.description = description;
@@ -63,6 +62,5 @@ router.put('/:id', fetchUser, async (req, res) => {
     res.status(500).send('Server error');
   }
 });
-
 
 module.exports = router;

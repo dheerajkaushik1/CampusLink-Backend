@@ -22,6 +22,10 @@ const UserSchema = new mongoose.Schema({
     year: {
         type: String,
         required: true
+    },
+    isAdmin: {
+        type: Boolean,
+        default: false 
     }
 });
 

@@ -5,50 +5,35 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const fetchUser = require('../middleware/fetchUser');
 
-//Register Route
+// Register Route
 router.post('/register', async (req, res) => {
     try {
-        const { name, email, password, year } = req.body;
+        const { name, email, password, year, isAdmin } = req.body;
 
-        //check if user exists
+        // Check if user exists
         let user = await User.findOne({ email });
         if (user) {
             return res.status(400).json({ msg: 'User already exists' });
         }
 
-        //Save user
+        // Hash password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        // Save user
         user = new User({
-            name, email, password, year
-        })
+            name,
+            email,
+            password: hashedPassword,
+            year,
+            isAdmin: isAdmin || false // default to false if not provided
+        });
+
         await user.save();
 
-        //generate token 
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-        res.json({ token });
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send("Server error");
-    }
-})
-
-//Login Route
-router.post('/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-
-        //Find user
-        const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(400).json({ msg: 'User does not exist' });
-        }
-
-        //comparing password
-        if (user.password !== password) {
-            return res.status(400).json({ msg: 'Invalid credentials' });
-        }
-
-        //generate token
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+        // Generate token
+        const payload = { id: user._id };
+        const token = jwt.sign(payload, process.env.JWT_SECRET);
         res.json({ token });
     } catch (err) {
         console.error(err.message);
@@ -56,6 +41,32 @@ router.post('/login', async (req, res) => {
     }
 });
 
+// Login Route
+router.post('/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        // Find user
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ msg: 'User does not exist' });
+        }
+
+        // Compare password
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ msg: 'Invalid credentials' });
+        }
+
+        // Generate token
+        const payload = { id: user._id };
+        const token = jwt.sign(payload, process.env.JWT_SECRET);
+        res.json({ token });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Server error");
+    }
+});
 
 // Get logged-in user data (used in chat for getting year)
 router.post('/getuser', fetchUser, async (req, res) => {
