@@ -84,9 +84,11 @@ router.delete('/:doubtId/answer/:answerId', fetchUser, async (req, res) => {
       return res.status(401).send('Unauthorized');
     }
 
-    answer.remove(); // or doubt.answers.pull(answer._id);
+    answer.remove(); 
     await doubt.save();
-    res.json({ msg: 'Answer deleted', doubt });
+    const updatedDoubt = await Doubt.findById(req.params.doubtId);
+    res.json({ msg: 'Answer deleted', doubt: updatedDoubt });
+
   } catch (err) {
     console.error(err);
     res.status(500).send('Server Error');
